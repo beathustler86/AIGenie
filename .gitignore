@@ -67,14 +67,16 @@ weights/
 .DS_Store
 Thumbs.db
 
+## =====================================================
+# Manifest Exclusions.
 # =====================================================
-# Manifest Exclusions
-# =====================================================
-core_manifest.json
-upload_manifest.json
+# Ignore root-level manifests only
+/core_manifest.json
+/upload_manifest.json
 
 # Explicitly track the real manifest location
-!src/config/core_manifest.json
+!config/core_manifest.json
+
 
 # =====================================================
 # Deployment Artifacts

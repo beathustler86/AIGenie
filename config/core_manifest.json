@@ -1,0 +1,51 @@
+{
+    "core_files": [
+        "launch_gui.py",
+        "src/gui/main_window.py",
+        "src/modules/preflight_check.py",
+        "src/modules/refiner_module.py",
+        "src/modules/version_check.py",
+        "src/modules/upscale_module.py",
+        "Scripts/model_size_audit.py",
+        "Scripts/size_audit.py",
+        "src/config/config_paths.py",
+        "src/modules/utils/checkpoint_validator.py"
+    ],
+    "cosmos_modules": [
+        "src/nodes/cosmos_text_to_video.py",
+        "src/nodes/my_model_defs.py",
+        "src/nodes/ops.py",
+        "src/nodes/__init__.py",
+        "src/nodes/cosmos/blocks.py",
+        "src/nodes/cosmos/model.py",
+        "src/nodes/cosmos/position_embedding.py",
+        "src/nodes/cosmos/predict2.py",
+        "src/nodes/cosmos/vae.py",
+        "src/nodes/cosmos/__init__.py",
+        "src/nodes/cosmos/cosmos_tokenizer/layers3d.py",
+        "src/nodes/cosmos/cosmos_tokenizer/patching.py",
+        "src/nodes/cosmos/cosmos_tokenizer/utils.py",
+        "src/nodes/cosmos/cosmos_tokenizer/__init__.py"
+    ],
+    "assets": [
+        "src/data/poweredbynvidia_optimized.png"
+    ],
+    "utils": [
+        "src/utils/"
+    ],
+    "logs": [
+        "logs/"
+    ],
+    "excluded_folders": [
+        {
+            "folder": "models/",
+            "included": false,
+            "reason": "Ignored in Git due to large model weights",
+            "audit_log": "logs/model_log.json",
+            "last_audit": "2025-08-29T23:08:00+01:00",
+            "total_files_flagged": 42,
+            "largest_file_MB": 15945.49,
+            "notes": "Folder retained for GUI structure and manifest clarity. Contents excluded from version control."
+        }
+    ]
+}
