@@ -1,0 +1,28 @@
+[
+	{
+		"path": "readme.md",
+		"required": true,
+		"description": "Cockpit-polished README for GitHub deployment"
+	},
+	{
+		"path": "readme2.md",
+		"required": false,
+		"description": "Secondary README or extended documentation"
+	},
+	{
+		"path": "requirements.txt",
+		"required": true,
+		"description": "Dependency list for runtime environment"
+	},
+	{
+		"path": ".gitignore",
+		"required": true,
+		"description": "Excludes cache, binaries, and large files from version control"
+	},
+	{
+		"path": "release_notes.md",
+		"required": false,
+		"description": "Version history and cockpit evolution log"
+	}
+]
+

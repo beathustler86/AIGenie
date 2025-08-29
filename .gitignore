@@ -22,6 +22,7 @@ build/
 # =====================================================
 *.log
 logs/
+src/logs/
 telemetry/
 
 # =====================================================
@@ -30,6 +31,18 @@ telemetry/
 cache/
 frames/
 renders/
+.cache/
+models/.cache/
+
+
+# Ignore all contents of output folders, but keep the folder itself
+output/**
+!output/.keep
+
+outputs/**
+!outputs/.keep
+
+
 
 # =====================================================
 # Model Weights and Binaries (large files, use Git LFS or external storage)
@@ -39,6 +52,7 @@ renders/
 *.h5
 *.tflite
 *.safetensors
+*.safetensors.index.json
 *.onnx
 *.bin
 *.pth
@@ -85,6 +99,13 @@ env/Lib/site-packages/torch/lib/cusparse64_12.dll
 env/Lib/site-packages/torch/lib/dnnl.lib
 env/Lib/site-packages/torch/lib/torch_cpu.dll
 env/Lib/site-packages/torch/lib/torch_cuda.dll
-models/text_to_image/**/*
-models/text_to_video/**/*
-models/Upscaler/upscaler-ultra/*.pth
+
+
+# =====================================================
+# AI models
+# =====================================================
+models/**
+!models/.keep
+.git/lfs/objects/
+
+
