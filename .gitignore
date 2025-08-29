@@ -72,7 +72,9 @@ Thumbs.db
 # =====================================================
 core_manifest.json
 upload_manifest.json
-!AI-Generator/config/core_manifest.json
+
+# Explicitly track the real manifest location
+!src/config/core_manifest.json
 
 # =====================================================
 # Deployment Artifacts
@@ -107,5 +109,6 @@ env/Lib/site-packages/torch/lib/torch_cuda.dll
 models/**
 !models/.keep
 .git/lfs/objects/
+
 
 
