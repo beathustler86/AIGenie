@@ -2,29 +2,67 @@
 # 🧠 preflight_check.py — SDXL Cockpit Preflight Diagnostic
 # ============================
 
-
-from src.modules.utils.checkpoint_validator import validate_rrdb_checkpoint
-from src.config.config_paths import UPSCALE_MODEL_PATHS
-print("=== 🔍 Validating upscale model checkpoints ===")
-for model_name, path in UPSCALE_MODEL_PATHS.items():
-	if not path.exists():
-		print(f"[Audit ❌] Missing checkpoint → {path}")
-		continue
-
-	valid = validate_rrdb_checkpoint(str(path))
-	if not valid:
-		print(f"[Audit ⚠️] Model '{model_name}' may be incompatible with RRDBNet")
-
-
-
-
+import os
+import json
+import shutil
+import subprocess
+import sys
+import torch
 from pathlib import Path
 from datetime import datetime
 from init_sweep import ensure_init_files
 
-import os
-import shutil
+from src.config.config_paths import UPSCALE_MODEL_PATHS, UPSCALE_DIR
+from src.modules.utils.checkpoint_validator import validate_rrdb_checkpoint
 
+def log(msg):
+	print(f"[{datetime.now().strftime('%H:%M:%S')}] {msg}")
+
+
+
+def sanitize_event(event):
+	if isinstance(event, dict):
+		return {k: str(v) if isinstance(v, os.PathLike) else v for k, v in event.items()}
+	return event
+
+def log_event(event):
+	os.makedirs(os.path.dirname(LOG_PATH), exist_ok=True)  # ← Ensure folder exists
+	if not os.path.exists(LOG_PATH):
+		with open(LOG_PATH, "w") as f:
+			f.write("")
+
+	safe_event = sanitize_event(event)
+	with open(LOG_PATH, "a") as f:
+		if isinstance(safe_event, dict):
+			f.write(json.dumps(safe_event) + "\n")
+		else:
+			f.write(json.dumps({"message": str(safe_event), "timestamp": datetime.now().isoformat()}) + "\n")
+
+#def log_event(event_data):
+#	"""Basic telemetry logger — extend as needed."""
+#	log_path = os.path.join(os.getcwd(), "telemetry.log")
+#	with open(log_path, "a") as f:
+#		f.write(json.dumps(event_data) + "\n")
+
+
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
+
+# === CONFIG ===
+VERBOSE_LOGGING = True
+LOG_PATH = "F:/SoftwareDevelopment/AI Models Image/AIGenerator/logs/telemetry_log.jsonl"
+GUI_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "gui", "main_window.py")
+MANIFEST_PATH = "F:/SoftwareDevelopment/AI Models Image/AIGenerator/config/core_manifest.json"
+
+MODEL_PATHS = {
+	"SDXL 1.0": "F:/SoftwareDevelopment/AI Models Image/AIGenerator/models/text_to_image/sdxl-base-1.0",
+	"SDXL 1.5": "F:/SoftwareDevelopment/AI Models Image/AIGenerator/models/text_to_image/sdxl-base-1.5",
+	"Refiner": "F:/SoftwareDevelopment/AI Models Image/AIGenerator/models/text_to_image/sdxl-refiner-1.0",
+	"DreamShaper XL Turbo v2": "F:/SoftwareDevelopment/AI Models Image/AIGenerator/models/text_to_image/dreamshaper-xl-v2-turbo",
+	"ComfyUI": "F:/SoftwareDevelopment/AI Models Image/AIGenerator/models/text_to_video/ComfyUI"
+}
+# === UPSCALE MODELS ===
+from src.config.config_paths import UPSCALE_MODEL_PATHS
 
 UPSCALE_MODEL_PATHS = {
 	"UltraSharp": Path("models/Upscaler/upscaler-ultra/4x-UltraSharp.pth"),
@@ -37,101 +75,6 @@ UPSCALE_MODELS = {
 	"Remacri": "Remacri.pth",
 	"Anime6B": "Anime6B.pth"
 }
-
-
-print("[Debug] ✅ Running active preflight_check.py")
-print("[Debug] 📍 Path:", __file__)
-
-import torch
-import os
-import json
-import subprocess
-from datetime import datetime
-import sys
-from src.config.config_paths import UPSCALE_DIR
-
-def load_core_manifest(manifest_path):
-	with open(manifest_path, 'r') as f:
-		return json.load(f)
-
-def validate_core_files(manifest):
-	missing = []
-	for path in manifest['core_files'] + manifest['cosmos_modules']:
-		full_path = os.path.join("F:\\SoftwareDevelopment\\AI Models Image\\AIGenerator", path)
-		if not os.path.isfile(full_path):
-			missing.append(full_path)
-	return missing
-
-# Usage
-manifest_path = "F:\\SoftwareDevelopment\\AI Models Image\\AIGenerator\\config\\core_manifest.json"
-manifest = load_core_manifest(manifest_path)
-missing_files = validate_core_files(manifest)
-
-if missing_files:
-	print("🚨 Missing critical files:")
-	for file in missing_files:
-		print(f" - {file}")
-else:
-	print("✅ All core files present and accounted for.")
-
-
-def purge_pycache(root="./src"):
-	for dirpath, dirnames, filenames in os.walk(root):
-		for dirname in dirnames:
-			if dirname == "__pycache__":
-				shutil.rmtree(os.path.join(dirpath, dirname), ignore_errors=True)
-
-def validate_init_files(root="./src"):
-	for dirpath, dirnames, filenames in os.walk(root):
-		if "__init__.py" not in filenames:
-			open(os.path.join(dirpath, "__init__.py"), "a").close()
-
-
-def run_preflight():
-	print("=== 🧠 SDXL Cockpit Preflight Check ===")
-
-	# === Pycache Purge ===
-	from init_sweep import purge_pycache
-	purge_pycache("F:/SoftwareDevelopment/AI Models Image/AIGenerator")
-	log_event({
-		"event": "PycachePurge",
-		"status": "complete",
-		"timestamp": datetime.now().isoformat()
-	})
-
-def sanitize_event(event):
-	if isinstance(event, dict):
-		return {k: str(v) if isinstance(v, os.PathLike) else v for k, v in event.items()}
-	return event
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
-
-# === CONFIG ===
-VERBOSE_LOGGING = True
-LOG_PATH = "F:/SoftwareDevelopment/AI Models Image/AIGenerator/logs/telemetry_log.jsonl"
-GUI_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "gui", "main_window.py")
-
-MODEL_PATHS = {
-	"SDXL 1.0": "F:/SoftwareDevelopment/AI Models Image/AIGenerator/models/text_to_image/sdxl-base-1.0",
-	"SDXL 1.5": "F:/SoftwareDevelopment/AI Models Image/AIGenerator/models/text_to_image/sdxl-base-1.5",
-	"Refiner": "F:/SoftwareDevelopment/AI Models Image/AIGenerator/models/text_to_image/sdxl-refiner-1.0",
-	"DreamShaper XL Turbo v2": "F:/SoftwareDevelopment/AI Models Image/AIGenerator/models/text_to_image/dreamshaper-xl-v2-turbo",
-	"ComfyUI": "F:/SoftwareDevelopment/AI Models Image/AIGenerator/models/text_to_video/ComfyUI"
-}
-# === UPSCALE MODELS ===
-from src.config.config_paths import UPSCALE_MODEL_PATHS
-
-
-def log_event(event):
-	if not os.path.exists(LOG_PATH):
-		with open(LOG_PATH, "w") as f:
-			f.write("")
-	safe_event = sanitize_event(event)
-	with open(LOG_PATH, "a") as f:
-		if isinstance(safe_event, dict):
-			f.write(json.dumps(safe_event) + "\n")
-		else:
-			f.write(json.dumps({"message": str(safe_event), "timestamp": datetime.now().isoformat()}) + "\n")
 
 def verbose_log(event):
 	if not VERBOSE_LOGGING:
@@ -146,15 +89,46 @@ def verbose_log(event):
 		else:
 			f.write("[VERBOSE] " + json.dumps({"message": str(safe_event), "timestamp": datetime.now().isoformat()}) + "\n")
 
+print("[Debug] ✅ Running active preflight_check.py")
+print("[Debug] 📍 Path:", __file__)
+
+def load_core_manifest(path):
+	try:
+		with open(path, 'r') as f:
+			manifest = json.load(f)
+		if not isinstance(manifest.get("core_files"), list) or not isinstance(manifest.get("cosmos_modules"), list):
+			raise ValueError("Manifest keys must be lists.")
+		return manifest
+	except Exception as e:
+		log_event({"event": "ManifestLoadError", "error": str(e), "timestamp": datetime.now().isoformat()})
+		print(f"[Manifest ❌] Failed to load or parse manifest: {e}")
+		return {"core_files": [], "cosmos_modules": []}
+
+def validate_manifest_files(manifest):
+	missing = []
+	for zone, files in [("core_files", manifest.get("core_files", [])), ("cosmos_modules", manifest.get("cosmos_modules", []))]:
+		for path in files:
+			full_path = os.path.join("F:/SoftwareDevelopment/AI Models Image/AIGenerator", path)
+			if not os.path.isfile(full_path):
+				missing.append(full_path)
+				log_event({"event": "MissingFile", "zone": zone, "path": full_path, "timestamp": datetime.now().isoformat()})
+	return missing
+
+def purge_pycache(root="./src"):
+	for dirpath, dirnames, filenames in os.walk(root):
+		for dirname in dirnames:
+			if dirname == "__pycache__":
+				shutil.rmtree(os.path.join(dirpath, dirname), ignore_errors=True)
+
+def validate_init_files(root="./src"):
+	for dirpath, dirnames, filenames in os.walk(root):
+		if "__init__.py" not in filenames:
+			open(os.path.join(dirpath, "__init__.py"), "a").close()
+
 def check_cuda():
 	status = torch.cuda.is_available()
 	device = torch.cuda.get_device_name(0) if status else "CPU"
-	log_event({
-		"event": "CUDA Check",
-		"available": status,
-		"device": device,
-		"timestamp": datetime.now().isoformat()
-	})
+	log_event({"event": "CUDA Check", "available": status, "device": device, "timestamp": datetime.now().isoformat()})
 	print(f"[CUDA] Available: {status} | Device: {device}")
 
 def check_vram():
@@ -190,7 +164,7 @@ def check_dependencies():
 				"timestamp": datetime.now().isoformat()
 			})
 			print(f"[Dependency] {pkg}: {status} {version}")
-		except Exception as e:
+		except Exception:
 			print(f"[Dependency] ❌ {pkg} not found")
 
 def check_model_paths():
@@ -205,18 +179,135 @@ def check_model_paths():
 		})
 		status = "✅ Found" if exists else "❌ Missing"
 		print(f"[Model] {name}: {status}")
+		
+def check_sdxl_1_0():
+	path = MODEL_PATHS["SDXL 1.0"]
+	exists = os.path.exists(path)
+	status = "✅ Found" if exists else "❌ Missing"
+	log_event({
+		"event": "ModelCheck",
+		"model": "SDXL 1.0",
+		"path": path,
+		"exists": exists,
+		"timestamp": datetime.now().isoformat()
+	})
+	print(f"[SDXL 1.0] {status}")
+
+def check_dreamshaper_v2():
+	path = MODEL_PATHS["DreamShaper XL Turbo v2"]
+	exists = os.path.exists(path)
+	status = "✅ Found" if exists else "❌ Missing"
+	log_event({
+		"event": "ModelCheck",
+		"model": "DreamShaper XL Turbo v2",
+		"path": path,
+		"exists": exists,
+		"timestamp": datetime.now().isoformat()
+	})
+	print(f"[DreamShaperV2] {status}")
+
+def check_comfyui():
+	path = MODEL_PATHS["ComfyUI"]
+	exists = os.path.exists(path)
+	status = "✅ Found" if exists else "❌ Missing"
+	log_event({
+		"event": "ModelCheck",
+		"model": "ComfyUI",
+		"path": path,
+		"exists": exists,
+		"timestamp": datetime.now().isoformat()
+	})
+	print(f"[ComfyUI] {status}")
+
+def check_gui_path():
+	if not os.path.exists(GUI_PATH):
+		log_event({"event": "GUIPathMissing", "path": GUI_PATH, "timestamp": datetime.now().isoformat()})
+		print(f"[GUI] ❌ main_window.py not found at expected path:\n{GUI_PATH}")
+		sys.exit(1)
+	else:
+		log_event({"event": "GUIPathCheck", "path": GUI_PATH, "exists": True, "timestamp": datetime.now().isoformat()})
+		print("[GUI] ✅ main_window.py located successfully.")
+
+def check_upscale_models():
+	print("=== 🔼 Upscale Model Check ===")
+	for model_name, path in UPSCALE_MODEL_PATHS.items():
+		resolved_path = str(path.resolve())
+		exists = os.path.exists(resolved_path)
+
+		# Log existence
+		log_event({
+			"event": "UpscaleModelCheck",
+			"model": model_name,
+			"path": resolved_path,
+			"exists": exists,
+			"timestamp": datetime.now().isoformat()
+		})
+
+		# Print status
+		status = "✅ Found" if exists else "❌ Missing"
+		print(f"[Upscale] {model_name}: {status}")
+
+		# Skip validation if missing
+		if not exists:
+			print(f"[Audit ❌] Missing checkpoint → {resolved_path}")
+			continue
+
+		# Validate RRDB checkpoint compatibility
+		valid = validate_rrdb_checkpoint(resolved_path, silent=True)
+		if not valid:
+			log_event({
+				"event": "UpscaleModelValidation",
+				"model": model_name,
+				"status": "incompatible",
+				"timestamp": datetime.now().isoformat()
+			})
+
+
+def get_refiner_status():
+	refiner_path = MODEL_PATHS.get("Refiner")
+	if not refiner_path or not os.path.exists(refiner_path):
+		return {
+			"available": False,
+			"error": "Refiner path missing or invalid",
+			"timestamp": datetime.now().isoformat()
+		}
+	device = "cuda" if torch.cuda.is_available() else "cpu"
+	return {
+		"available": True,
+		"device": device,
+		"path": refiner_path,
+		"timestamp": datetime.now().isoformat()
+	}
+
+def load_refiner(device):
+	from diffusers import StableDiffusionXLRefinerPipeline
+	refiner_path = MODEL_PATHS["Refiner"]
+	return StableDiffusionXLImg2ImgPipeline.from_pretrained(
+		refiner_path,
+		torch_dtype=torch.float16
+	).to(device)
+
+
 
 def check_refiner():
 	try:
-		from src.modules.refiner_module import get_refiner_status, load_refiner
 		status = get_refiner_status()
-		log_event({
-			"event": "RefinerStatus",
-			"available": status["available"],
-			"device": status["device"],
-			"path": status["path"],
-			"timestamp": status["timestamp"]
-		})
+		if isinstance(status, dict):
+			log_event({
+				"event": "RefinerStatus",
+				"available": status.get("available"),
+				"device": status.get("device"),
+				"path": status.get("path"),
+				"timestamp": status.get("timestamp")
+			})
+		else:
+			log_event({
+				"event": "RefinerStatusError",
+				"error": "Unexpected format",
+				"timestamp": datetime.now().isoformat()
+			})
+			print("[Refiner] ❌ Unexpected status format")
+			return
 
 		if status["available"]:
 			try:
@@ -252,56 +343,37 @@ def check_refiner():
 					print("[Refiner] ❌ Retry failed")
 		else:
 			print("[Refiner] ❌ Unavailable")
+
 	except Exception as e:
 		log_event({
-			"event": "RefinerImportError",
+			"event": "RefinerStatusException",
 			"error": str(e),
 			"timestamp": datetime.now().isoformat()
 		})
-		print("[Refiner] ❌ Import failed")
-
-
-
-
-def check_gui_path():
-	if not os.path.exists(GUI_PATH):
-		log_event({
-			"event": "GUIPathMissing",
-			"path": GUI_PATH,
-			"timestamp": datetime.now().isoformat()
-		})
-		print(f"[GUI] ❌ main_window.py not found at expected path:\n{GUI_PATH}")
-		sys.exit(1)
-	else:
-		log_event({
-			"event": "GUIPathCheck",
-			"path": GUI_PATH,
-			"exists": True,
-			"timestamp": datetime.now().isoformat()
-		})
-		print("[GUI] ✅ main_window.py located successfully.")
-		
-
-def check_upscale_models():
-	print("=== 🔼 Upscale Model Check ===")
-	for name, path in UPSCALE_MODEL_PATHS.items():
-		resolved_path = str(path.resolve())  # ✅ Absolute path
-		exists = os.path.exists(resolved_path)
-		status = "✅ Found" if exists else "❌ Missing"
-		log_event({
-			"event": "UpscaleModelCheck",
-			"model": name,
-			"path": resolved_path,
-			"exists": exists,
-			"timestamp": datetime.now().isoformat()
-		})
-		print(f"[Upscale] {name}: {status}")
-
-
-
+		print("[Refiner] ❌ Status check failed")
 
 def run_preflight():
 	print("=== 🧠 SDXL Cockpit Preflight Check ===")
+
+	validate_init_files("F:/SoftwareDevelopment/AI Models Image/AIGenerator/src")
+	log_event({"event": "InitFileCheck", "status": "complete", "timestamp": datetime.now().isoformat()})
+
+	purge_pycache("F:/SoftwareDevelopment/AI Models Image/AIGenerator/src")
+	log_event({"event": "PycachePurge", "status": "complete", "timestamp": datetime.now().isoformat()})
+
+	log("📦 Verifying model checkpoints...")
+	check_cuda()
+	check_model_paths()
+	check_refiner()
+	check_gui_path()
+	check_sdxl_1_0()
+	check_dreamshaper_v2()
+	check_comfyui()
+	check_upscale_models()
+
+	print("=== ✅ Preflight Complete ===")
+
+
 
 # === Version Telemetry Audit ===
 version_check_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "version_check.py")
@@ -315,17 +387,13 @@ except subprocess.CalledProcessError as e:
 	})
 	print(f"[VersionCheck ❌] Failed: {e}")
 
-
-
-	check_cuda()
-	check_model_paths()
-	check_refiner()
-	check_gui_path()
-
-	print("\n=== 🔼 Upscale Model Check ===")  # ✅ Add this banner
-	check_upscale_models()                     # ✅ Call the function
-
-	print("=== ✅ Preflight Complete ===")
+	# Manifest Validation missing files
+	if missing_files:
+		print("🚨 Missing critical files:")
+		for file in missing_files:
+			print(f" - {file}")
+	else:
+		print("✅ All core files present and accounted for.")
 
 
 
@@ -338,4 +406,5 @@ except Exception as e:
 
 if __name__ == "__main__":
 	run_preflight()
+	
 
