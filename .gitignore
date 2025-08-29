@@ -1,0 +1,90 @@
+# =====================================================
+# Python Artifacts
+# =====================================================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# =====================================================
+# Virtual Environments and Dependencies
+# =====================================================
+.env/
+.venv/
+env/
+venv/
+*.egg-info/
+dist/
+build/
+
+# =====================================================
+# Logs and Telemetry
+# =====================================================
+*.log
+logs/
+telemetry/
+
+# =====================================================
+# Media Caches (keep assets, ignore heavy cache/renders)
+# =====================================================
+cache/
+frames/
+renders/
+
+# =====================================================
+# Model Weights and Binaries (large files, use Git LFS or external storage)
+# =====================================================
+*.pt
+*.ckpt
+*.h5
+*.tflite
+*.safetensors
+*.onnx
+*.bin
+*.pth
+models/
+weights/
+
+# =====================================================
+# IDE and OS Clutter
+# =====================================================
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# =====================================================
+# Manifest Exclusions
+# =====================================================
+core_manifest.json
+upload_manifest.json
+!AI-Generator/config/core_manifest.json
+
+# =====================================================
+# Deployment Artifacts
+# =====================================================
+*.zip
+*.tar.gz
+*.bak
+*.tmp
+
+# =====================================================
+# Auto-added large files (>50MB)
+# =====================================================
+env/Lib/site-packages/torch/lib/cublas64_12.dll
+env/Lib/site-packages/torch/lib/cublasLt64_12.dll
+env/Lib/site-packages/torch/lib/cudnn_adv64_9.dll
+env/Lib/site-packages/torch/lib/cudnn_engines_precompiled64_9.dll
+env/Lib/site-packages/torch/lib/cudnn_heuristic64_9.dll
+env/Lib/site-packages/torch/lib/cudnn_ops64_9.dll
+env/Lib/site-packages/torch/lib/cufft64_11.dll
+env/Lib/site-packages/torch/lib/curand64_10.dll
+env/Lib/site-packages/torch/lib/cusolver64_11.dll
+env/Lib/site-packages/torch/lib/cusolverMg64_11.dll
+env/Lib/site-packages/torch/lib/cusparse64_12.dll
+env/Lib/site-packages/torch/lib/dnnl.lib
+env/Lib/site-packages/torch/lib/torch_cpu.dll
+env/Lib/site-packages/torch/lib/torch_cuda.dll
+models/text_to_image/**/*
+models/text_to_video/**/*
+models/Upscaler/upscaler-ultra/*.pth
