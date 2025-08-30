@@ -34,15 +34,12 @@ renders/
 .cache/
 models/.cache/
 
-
 # Ignore all contents of output folders, but keep the folder itself
 output/**
 !output/.keep
 
 outputs/**
 !outputs/.keep
-
-
 
 # =====================================================
 # Model Weights and Binaries (large files, use Git LFS or external storage)
@@ -66,8 +63,10 @@ weights/
 .idea/
 .DS_Store
 Thumbs.db
+.vs/
+cockpit_env/
 
-## =====================================================
+# =====================================================
 # Manifest Exclusions.
 # =====================================================
 # Ignore root-level manifests only
@@ -76,7 +75,6 @@ Thumbs.db
 
 # Explicitly track the real manifest location
 !config/core_manifest.json
-
 
 # =====================================================
 # Deployment Artifacts
@@ -104,14 +102,12 @@ env/Lib/site-packages/torch/lib/dnnl.lib
 env/Lib/site-packages/torch/lib/torch_cpu.dll
 env/Lib/site-packages/torch/lib/torch_cuda.dll
 
-
 # =====================================================
 # AI models
 # =====================================================
 models/**
 !models/.keep
 .git/lfs/objects/
-
 
 # =====================================================
 # Preserve vital init files in src/
@@ -124,17 +120,13 @@ src/*
 !src/gui/__init__.py
 !src/modules/__init__.py
 
-
 # =====================================================
 # Local Tools and Scratch Files (exclude from GitHub)
 # =====================================================
 relative_file_list.txt
 
 # Block specific tools (explicit paths)
-
 tools/*.py
 
 # Block unused module init
 src/archiver/__init__.py
-echo .vs/ >> .gitignore
-echo cockpit_env/ >> .gitignore
