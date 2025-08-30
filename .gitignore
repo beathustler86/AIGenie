@@ -1,5 +1,10 @@
 # =====================================================
-# Python Artifacts
+# ? Preserve Git folder (safety override)
+# =====================================================
+!.git/
+
+# =====================================================
+# ?? Python Artifacts
 # =====================================================
 __pycache__/
 *.py[cod]
@@ -7,7 +12,7 @@ __pycache__/
 *.pyd
 
 # =====================================================
-# Virtual Environments and Dependencies
+# ?? Virtual Environments and Dependencies
 # =====================================================
 .env/
 .venv/
@@ -17,8 +22,11 @@ venv/
 dist/
 build/
 
+# Preserve custom cockpit env folder
+!venc/
+
 # =====================================================
-# Logs and Telemetry
+# ?? Logs and Telemetry
 # =====================================================
 *.log
 logs/
@@ -26,7 +34,7 @@ src/logs/
 telemetry/
 
 # =====================================================
-# Media Caches (keep assets, ignore heavy cache/renders)
+# ??? Media Caches (keep assets, ignore heavy cache/renders)
 # =====================================================
 cache/
 frames/
@@ -37,12 +45,11 @@ models/.cache/
 # Ignore all contents of output folders, but keep the folder itself
 output/**
 !output/.keep
-
 outputs/**
 !outputs/.keep
 
 # =====================================================
-# Model Weights and Binaries (large files, use Git LFS or external storage)
+# ?? Model Weights and Binaries (use Git LFS or external storage)
 # =====================================================
 *.pt
 *.ckpt
@@ -53,11 +60,10 @@ outputs/**
 *.onnx
 *.bin
 *.pth
-models/
 weights/
 
 # =====================================================
-# IDE and OS Clutter
+# ??? IDE and OS Clutter
 # =====================================================
 .vscode/
 .idea/
@@ -67,7 +73,7 @@ Thumbs.db
 cockpit_env/
 
 # =====================================================
-# Manifest Exclusions.
+# ?? Manifests
 # =====================================================
 # Ignore root-level manifests only
 /core_manifest.json
@@ -77,7 +83,7 @@ cockpit_env/
 !config/core_manifest.json
 
 # =====================================================
-# Deployment Artifacts
+# ?? Deployment Artifacts
 # =====================================================
 *.zip
 *.tar.gz
@@ -85,7 +91,7 @@ cockpit_env/
 *.tmp
 
 # =====================================================
-# Auto-added large files (>50MB)
+# ? Auto-added Large Files (>50MB)
 # =====================================================
 env/Lib/site-packages/torch/lib/cublas64_12.dll
 env/Lib/site-packages/torch/lib/cublasLt64_12.dll
@@ -103,30 +109,31 @@ env/Lib/site-packages/torch/lib/torch_cpu.dll
 env/Lib/site-packages/torch/lib/torch_cuda.dll
 
 # =====================================================
-# AI models
+# ?? AI Models
 # =====================================================
 models/**
 !models/.keep
 .git/lfs/objects/
 
 # =====================================================
-# Preserve vital init files in src/
+# ?? Source Code Rules
 # =====================================================
 # Ignore everything in src
 src/*
 
-**/__init__.py
+# Preserve vital init files
 !src/__init__.py
 !src/gui/__init__.py
 !src/modules/__init__.py
-
-# =====================================================
-# Local Tools and Scratch Files (exclude from GitHub)
-# =====================================================
-relative_file_list.txt
-
-# Block specific tools (explicit paths)
-tools/*.py
+!src/nodes/__init__.py
+!src/nodes/cosmos/__init__.py
+!src/models/__init__.py
 
 # Block unused module init
 src/archiver/__init__.py
+
+# =====================================================
+# ??? Local Tools and Scratch Files
+# =====================================================
+relative_file_list.txt
+tools/*.py
