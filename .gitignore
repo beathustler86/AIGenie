@@ -137,3 +137,4 @@ tools/*.py
 # Block unused module init
 src/archiver/__init__.py
 echo .vs/ >> .gitignore
+echo cockpit_env/ >> .gitignore
